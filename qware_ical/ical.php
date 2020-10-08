@@ -9,7 +9,7 @@
 
   $qw = new Qware_ical_helper();
   $ical_id =     abs( intval($_GET['id']));
-  $data = $qw->fetch_ical_data($ical_id);
+  $data = $qw->db_fetch($ical_id);
   if($_GET['download'] == "1"){
       $qw->download($ical_id,$data);
   }

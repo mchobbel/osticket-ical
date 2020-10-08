@@ -12,46 +12,48 @@ class Qware_ical_helper{
     }
 
 
+    function db_fetch($ical_id){
+        $q = "select data from qware_ical_data where id=" .$ical_id;
+        $result = db_query($q);
+        $row = $result->fetch_row();
+        return $row[0];
+    }
+    function db_insert($icaldata){
+        $stmt = db_prepare("insert into qware_ical_data(data) values (?)");
+        $stmt->bind_param("s",$icaldata);
+        $stmt->execute();
+        global $__db;
+        return $__db->insert_id;
+    }
+    
+
     function process_email(&$mailfetcher,&$data){
         $mid = $data['current-mid'];
         $this->debug("trigger mail.processed signal ");
 
         if ($icaldata=$mailfetcher->getPart($mid, 'text/calendar', $mailfetcher->charset)){
             $this->debug(" got icaldata.. going to insert it");
-            $stmt = db_prepare("insert into qware_ical_data(data) values (?)");
-            $stmt->bind_param("s",$icaldata);
-            $stmt->execute();
-            global $__db;
-
-            $last_id = $__db->insert_id;
-            $this->debug("inserted ical-data with id: $last_id ");
+            $ical_record_id = $this->db_insert($icaldata);
+            $this->debug("inserted ical-data with id: $ical_record_id ");
             $parser = new Qware_ical2html($icaldata);
-            $icalhtml = $parser->html($last_id);
+            $icalhtml = $parser->html($ical_record_id);
 
             if( gettype($data['message']) == "object"){
                 $currentType = get_class($data['message']);
-                $this->debug("type of existing..: $currentType");
+                $this->debug("Existing body type : $currentType");
                 if($this->endsWith($currentType,'Body')){
-                    $this->debug("append ical html to body");
+                    $this->debug("append ical html to existing body");
                     $data['message']->append($icalhtml);
+                    return;
                 }
-
-            }else{
-                $body = HtmlThreadEntryBody::fromFormattedText($icalhtml, 'html');
-                $data['message'] = $body;
             }
-            
+            // No existing body, so the Ical-data is the whole body.
+            $data['message'] =  HtmlThreadEntryBody::fromFormattedText($icalhtml, 'html');
         }else{
             $this->debug("no text/calendar part was found");
         }
     }
 
-    function fetch_ical_data($ical_id){
-        $q = "select data from qware_ical_data where id=" .$ical_id;
-        $result = db_query($q);
-        $row = $result->fetch_row();
-        return $row[0];
-    }
     
     function download($ical_id,$data){
         $fn2 = "event-".$ical_id.".ics";
@@ -166,6 +168,19 @@ class Qware_ical2html {
         return "<tr><td> $key </td> <td> $val </td></tr>";
     }
 
+    function httpcallback($matches){
+         $link = '<a href="'.$matches[0].'">[Link] </a>';
+         //return $matches[1] . $link. $matches[3];
+         return $link;
+     }
+     function descr($event){
+         $txt =  str_replace("\n","<br>",$event->description);
+         //print($txt);
+         //print("<br> ----------END_DEBUG---------------");
+         $pat = '/(http[^\s<>]+)/';
+         return preg_replace_callback($pat, [$this,'httpcallback'],$txt);
+     }
+
     function html($record_id){
         
         //date_default_timezone_set('UTC');
@@ -177,6 +192,7 @@ class Qware_ical2html {
 
         $html = '<table class="qware-ical-table">';
         $html .= $this->row("Summary:", $event->summary);
+        $html .= $this->row("Description:", $this->descr($event));
         $html .= $this->row("From:",  $dtstart->format('d-m-Y H:i') );
         $html .= $this->row("Until:",  $dtend->format('d-m-Y H:i') );
         $html .= $this->row("Location:", $event->location);
@@ -184,7 +200,7 @@ class Qware_ical2html {
         $html .= $this->row("Attendees:",$this->persons_html($event));
 
         $html .= "</table>";
-        // use a magic color-code so we can find this data with jQuery
+        // use the color-code so we can find this data with jQuery
         //  Nb. we need this work-around since HtmlThreadEntryBody strips all other attributes
         $html .= '<div style="color:#a3a3a4">';
         $html .= ' <span>ical-id='.$record_id.'</span></div>';
