@@ -2,11 +2,11 @@
 
 return array(
     'id' =>             'qware-ical',
-    'version' =>        '0.0.1',
+    'version' =>        '0.1.1',
     'name' =>            'Qware Ical handler',
     'author' =>         'Michiel Hobbelman',
     'description' =>    'Deal with incoming ical event email',
-    'url' =>            'http://github.org/mchobbel',
+    'url' =>            'https://github.com/mchobbel/osticket-ical',
     'plugin' =>         'bootstrap.php:QwareIcalPlugin'
 );
 

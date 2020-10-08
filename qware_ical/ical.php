@@ -1,7 +1,7 @@
 <?php
   // This file
   //  * is part of the Qware-ical plugin
-  //  * should installed directly under /scp/
+  //  * should be installed directly under /scp/
 
   require('staff.inc.php');
   require_once INCLUDE_DIR . 'plugins/qware_ical/ical.qware.php';
