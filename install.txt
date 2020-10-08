@@ -1,26 +1,24 @@
 1) Install the ICal library by John Grogg   (see https://github.com/u01jmg3/ics-parser)
-   Under upload install, make shure you have installed it using:
-   
+   Make shure you have it installed by using:
    #  composer.phar require johngrogg/ics-parser
    
-   Our plugin expects it can be loaded via upload/vendor/autoload.php 
-
-
 2) Under upload : create directory 'tmp'
  # mkdir upload/tmp
- 
-   + Make shure osT has write-access to it.
+ Plus make shure the webserver has write-access.
   
 3) Install ical.php in /scp/
  #  cp ical.php upload/scp/
 
-4) Patch class.mailparser.php  (in upload/include)
-
- Just before you see:
-   Signal::send('mail.processed', $this, $vars);
+4) Patch class.mailparser.php
+  At the moment we need 1 small change in the osTicket code for our plugin to function.
+  Edit upload/include/class.mailparser.php
+  
+  At line 872, just before :
+     Signal::send('mail.processed', $this, $vars);
    
- add this line:
-  $vars['current-mid'] = $mid;
+  insert this line:
+     $vars['current-mid'] = $mid;
 
- Nb. Our plugin needs the imap message-id ($mid) variable so we can
-   find the calender imap data for the correct imap-message.
+ Nb. Our plugin needs the imap message-id ($mid) so
+    it can access the IMAP-message and find
+     the calender imap data.
