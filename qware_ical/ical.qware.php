@@ -29,7 +29,7 @@ class Qware_ical_helper{
 
     function process_email(&$mailfetcher,&$data){
         $mid = $data['current-mid'];
-        $this->debug("trigger mail.processed signal ");
+        $this->debug("trigger mail.processed signal, charset= ".$mailfetcher->charset);
 
         if ($icaldata=$mailfetcher->getPart($mid, 'text/calendar', $mailfetcher->charset)){
             $this->debug(" got icaldata.. going to insert it");
@@ -41,9 +41,15 @@ class Qware_ical_helper{
             if( gettype($data['message']) == "object"){
                 $currentType = get_class($data['message']);
                 $this->debug("Existing body type : $currentType");
-                if($this->endsWith($currentType,'Body')){
+                if($currentType == 'HtmlThreadEntryBody'){
                     $this->debug("append ical html to existing body");
                     $data['message']->append($icalhtml);
+                    return;
+                }
+                if($currentType == 'TextThreadEntryBody'){
+                    $this->debug("merge ical together with existing txt");                    
+                    $html = $data['message']->display(false) . "<br>\n" . $icalhtml ;
+                    $data['message'] = HtmlThreadEntryBody::fromFormattedText($html, 'html');
                     return;
                 }
             }
