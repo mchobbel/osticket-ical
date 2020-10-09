@@ -21,7 +21,9 @@ It allows your osTicket install to recognise incoming emails which contain an iC
     
    - Install this plugin
    
-         cp -r osticket-ical/qware_ical upload/include/plugins/
+         git clone https://github.com/mchobbel/osticket-ical.git
+   
+         cp -r osticket-ical/qware_ical YOUR_OST_INSTAL/upload/include/plugins/
    
          
    - Patch class.mailparser.php ;  At the moment we need 1 small change in the osTicket code for our plugin to function.
@@ -35,4 +37,8 @@ It allows your osTicket install to recognise incoming emails which contain an iC
 
      -  Nb. The reason for this patch is that the plugin needs the imap message-id ($mid) so it can access the IMAP-message and find  the calender imap data.
 ~
-
+   - Activate the plugin. As admin goto your osticket staff panel and go to Manage -> Plugins. 
+     - Choose Add new plugin. You should now find 'Qware ical handler'
+     - Enable the plugin
+     - Click on the Plugin name 'Qware ical handler' to trigger creation of the SQL table 'qware_ical_data'
+     - Now you're good to go!
