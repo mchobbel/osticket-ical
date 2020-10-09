@@ -33,6 +33,27 @@ class QwareIcalPlugin extends Plugin {
 
         });
 
+        Signal::connect('ajax.scp', function($object,$type){
+            $id = intval($_GET['download-ical-id']);
+            if($id>0){
+                $qw = new Qware_ical_helper();
+                $data = $qw->db_fetch($id);
+                $qw->download($id,$data);
+            }
+            $id = intval($_GET['view-ical-id']);
+            if($id>0){
+                $qw = new Qware_ical_helper();
+                $data = $qw->db_fetch($id);
+                $qwhtml = new Qware_ical2html($data);
+                echo $qwhtml->html($id);
+                echo "<pre>";
+                echo $data;
+                echo "</pre>";
+                exit;
+            }
+            
+        });
+
     }
 
     function debug($msg){

@@ -57,18 +57,20 @@ class Qware_ical_helper{
     
     function download($ical_id,$data){
         $fn2 = "event-".$ical_id.".ics";
-        $fn = "../tmp/icalevent.ics";
-        $handle = fopen($fn, "w");
-        fwrite($handle, $data);
-        fclose($handle);
+        //$fn = "../tmp/icalevent.ics";
+        //$handle = fopen($fn, "w");
+        //fwrite($handle, $data);
+        //fclose($handle);
         
         header('Content-Type: application/octet-stream');
         header('Content-Disposition: attachment; filename='.$fn2);
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
-        header('Content-Length: ' . filesize($fn));
-        readfile($fn);
+        //header('Content-Length: ' . filesize($fn));
+        header('Content-Length: ' . strlen($data));
+        //readfile($fn);
+        echo $data;
         exit;
         
     }
@@ -79,6 +81,10 @@ class Qware_ical_helper{
 }
 
 class Qware_ical2html {
+    // Don't change $color_code !
+    //  it is used as identifier so jQuery can recognise  previously generated html-code.
+    //  Nb. we need this work-around since HtmlThreadEntryBody strips all other html-attributes.
+    static $color_code = '#a3a3a4';
     
     function __construct($raw){
         $this->raw = $raw;
@@ -86,11 +92,11 @@ class Qware_ical2html {
 
     static function printJs(){
         ?>
-        <script>
+        <script type="text/javascript">
 
         $( document ).ready(function() {
             console.log( "ready qware js!" );
-            var elm = $('div[style="color:#a3a3a4"]');
+            var elm = $('div[style="color:<?php echo self::$color_code?>"]');
             
             if(elm.length>0){
                 elm.find('span').css('color','white').css('font-size','8pt');
@@ -98,7 +104,7 @@ class Qware_ical2html {
                 if(ical_id != null){
                     var link = $('<a id="ics-inspect">').attr('ics-id',ical_id).append("Inspect").on('click',(x)=>{
                             var icsid = $(x.target).attr('ics-id');
-                            var url = "ical.php?id="+icsid;
+                            var url = "ajax.php?view-ical-id="+icsid;
                             //console.log(x.target);
                             console.log("bla "+url);
                             $.get(url,(d)=>{
@@ -114,8 +120,7 @@ class Qware_ical2html {
                             });
                     });
 
-
-                    var url = 'ical.php?download=1&id='+ical_id;
+                    var url = 'ajax.php?download-ical-id='+ical_id;
                     var download = $('<a>').attr('href',url).append("Download ICS");
                     elm.parent().append('<div>').append(download);
                     elm.parent().append('<div>').append(link);                    
@@ -182,7 +187,7 @@ class Qware_ical2html {
      }
 
     function html($record_id){
-        
+        // 
         //date_default_timezone_set('UTC');
         $ical = new ICal();
         $ical->initString($this->raw);
@@ -200,9 +205,7 @@ class Qware_ical2html {
         $html .= $this->row("Attendees:",$this->persons_html($event));
 
         $html .= "</table>";
-        // use the color-code so we can find this data with jQuery
-        //  Nb. we need this work-around since HtmlThreadEntryBody strips all other attributes
-        $html .= '<div style="color:#a3a3a4">';
+        $html .= '<div style="color:'.self::$color_code . '">';
         $html .= ' <span>ical-id='.$record_id.'</span></div>';
 
         return '<div>' . $html.'</div>';
