@@ -1,13 +1,13 @@
 # osticket-ical
 ## Description
-This plugin adds Ical support to osTicket. 
+This plugin adds iCal support to osTicket. 
 
 It allows your osTicket install to recognise incoming emails which contain an iCal object and handle it in the following way:
    1. Store the iCal object in the database
    1. Create a human-readable HTML rendering of the iCal object, which is included in in the Ticket-entry.
    1. Provide links in the Ticket-entry to inspect the iCal object and to download it as an .ics file.
 
-Nb. ical is also called ics or [icalendar](https://en.wikipedia.org/wiki/ICalendar)
+Nb. The iCal MEME-type is also called ics or [icalendar](https://en.wikipedia.org/wiki/ICalendar)
 
 ## Requires
    1. osTicket - https://github.com/osTicket/osTicket
