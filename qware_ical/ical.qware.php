@@ -180,34 +180,28 @@ class Qware_ical2html {
         return "<tr><td> $key </td> <td> $val </td></tr>";
     }
 
-    function hrefcallback2($matches){
-        return ' <a href="'.$matches[2].'">[Link]</a> ';
-    }
-    function hrefcallback($matches){
+
+    function hrefCallback($matches){
+        // create a link from URL
         return ' <a href="'.$matches[1].'">[Link]</a> ';
     }
-    function sipcallback($matches){
-        return   ' ';
-     }
-     function descr2($event){
-         $txt =  str_replace("\n","<br>",$event->description);
-         //print($txt);
-         //print("<br> ----------END_DEBUG---------------");
 
-         $ret1 = preg_replace_callback(  '/(\&lt;)?(http[^\s<>&]+)(\&gt;)?/', [$this,'hrefcallback2'],$txt);
-         $ret2 = preg_replace_callback( '/(\&lt;sip[^&]+)(\&gt;)?/', [$this,'sipcallback'],$ret1);
-         $ret3 = preg_replace_callback( '/(\&lt;tel[^&]+)(\&gt;)?/', [$this,'sipcallback'],$ret2);
-         return str_replace('%2B','+',$ret3);
+    
+    function htmlTagCallback($matches){
+        // strip html tags except '<a>'
+        if($matches[1] == 'a'){
+            return $matches[0];
+        }else{
+            return ' ';
+        }
      }
+
      function descr($event){
          $txt = str_replace("&gt;",">",str_replace("&lt;","<",$event->description));
-         $ret1 = preg_replace_callback(  '/<?(http[^\s<>]+)>?/', [$this,'hrefcallback'],$txt);
-         $ret2 = preg_replace_callback( '/(<sip[^>]+)>/', [$this,'sipcallback'],$ret1);
-         $ret3 = preg_replace_callback( '/(<tel[^>]+)>/', [$this,'sipcallback'],$ret2);
-         //$ret4 = str_replace(">","&gt;",str_replace("<","&lt;",$ret3));
-         return str_replace("\n","<br>",$ret3);
+         $ret1 = preg_replace_callback(  '/<?(http[^\s<>]+)>?/', [$this,'hrefCallback'],$txt);
+         $ret2 = preg_replace_callback( '/<([a-z]+)([^>]+)>/', [$this,'htmlTagCallback'],$ret1);
+         return str_replace("\n","<br>",$ret2);
      }
-
 
 
     function html($record_id){
