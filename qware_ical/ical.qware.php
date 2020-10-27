@@ -42,10 +42,11 @@ class Qware_ical_helper{
                 $currentType = get_class($data['message']);
                 $this->debug("Existing body type : $currentType");
                 if($currentType == 'HtmlThreadEntryBody'){
+
                     $this->debug("append ical html to existing body");
                     $data['message']->append($icalhtml);
                     return;
-                }
+                  }
                 if($currentType == 'TextThreadEntryBody'){
                     $this->debug("merge ical together with existing txt");                    
                     $html = $data['message']->display(false) . "<br>\n" . $icalhtml ;
@@ -179,18 +180,35 @@ class Qware_ical2html {
         return "<tr><td> $key </td> <td> $val </td></tr>";
     }
 
-    function httpcallback($matches){
-         $link = '<a href="'.$matches[0].'">[Link] </a>';
-         //return $matches[1] . $link. $matches[3];
-         return $link;
+    function hrefcallback2($matches){
+        return ' <a href="'.$matches[2].'">[Link]</a> ';
+    }
+    function hrefcallback($matches){
+        return ' <a href="'.$matches[1].'">[Link]</a> ';
+    }
+    function sipcallback($matches){
+        return   ' ';
      }
-     function descr($event){
+     function descr2($event){
          $txt =  str_replace("\n","<br>",$event->description);
          //print($txt);
          //print("<br> ----------END_DEBUG---------------");
-         $pat = '/(http[^\s<>]+)/';
-         return preg_replace_callback($pat, [$this,'httpcallback'],$txt);
+
+         $ret1 = preg_replace_callback(  '/(\&lt;)?(http[^\s<>&]+)(\&gt;)?/', [$this,'hrefcallback2'],$txt);
+         $ret2 = preg_replace_callback( '/(\&lt;sip[^&]+)(\&gt;)?/', [$this,'sipcallback'],$ret1);
+         $ret3 = preg_replace_callback( '/(\&lt;tel[^&]+)(\&gt;)?/', [$this,'sipcallback'],$ret2);
+         return str_replace('%2B','+',$ret3);
      }
+     function descr($event){
+         $txt = str_replace("&gt;",">",str_replace("&lt;","<",$event->description));
+         $ret1 = preg_replace_callback(  '/<?(http[^\s<>]+)>?/', [$this,'hrefcallback'],$txt);
+         $ret2 = preg_replace_callback( '/(<sip[^>]+)>/', [$this,'sipcallback'],$ret1);
+         $ret3 = preg_replace_callback( '/(<tel[^>]+)>/', [$this,'sipcallback'],$ret2);
+         //$ret4 = str_replace(">","&gt;",str_replace("<","&lt;",$ret3));
+         return str_replace("\n","<br>",$ret3);
+     }
+
+
 
     function html($record_id){
         // 

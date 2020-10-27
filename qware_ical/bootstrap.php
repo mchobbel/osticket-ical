@@ -44,12 +44,21 @@ class QwareIcalPlugin extends Plugin {
             if($id>0){
                 $qw = new Qware_ical_helper();
                 $data = $qw->db_fetch($id);
-                $qwhtml = new Qware_ical2html($data);
-                echo $qwhtml->html($id);
-                echo "<pre>";
-                echo $data;
-                echo "</pre>";
-                exit;
+                    
+                if($_GET['mode']=='raw'){
+                    echo '<h3>mode=raw</h3>';
+                    echo "<pre>";
+                    echo htmlspecialchars($data);
+                    echo "</pre>";
+                    exit;
+                }else{
+                    $qwhtml = new Qware_ical2html($data);
+                    echo $qwhtml->html($id);
+                    echo "<pre>";
+                    echo htmlspecialchars($data);                    
+                    echo "</pre>";
+                    exit;
+                }
             }
             
         });
